@@ -15,5 +15,8 @@ Installation
     * Download the dataset and extract it to the data folder
 
 Object detection
-YoloV8[https://github.com/ultralytics/ultralytics] is the state-of-the-art object detection model. So we'll train it on the MOT16 dataset. The model is trained on the training set and evaluated on the test set. 
+YoloV8[https://github.com/ultralytics/ultralytics] is the state-of-the-art object detection model. So we'll train it on the MOT16 dataset. The model is trained on the training set and evaluated on the test set.
+
+Future work:
+    * Faster-rcnn training. Comparison with YOLOv8
     
