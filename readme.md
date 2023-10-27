@@ -3,10 +3,20 @@ Dataset: https://motchallenge.net/data/MOT16/
 # Description:
 This benchmark contains 14 challenging video sequences (7 training, 7 test) in unconstrained environments filmed with both static and moving cameras. Tracking and evaluation are done in image coordinates. All sequences have been annotated with high accuracy, strictly following a well-defined protocol.
 
+## Technologies used:
+Python, Pytorch, YOLOv8, Faster-RCNN
+
 ## Annotation format:
+https://motchallenge.net/instructions/
 Each video directory contains two subdirectories, one with the frames and the other with a file gt.txt with annotations.
 This file containes many lines, each with the following information:
-* frame_number obj_id bbx bby bbw bbh obj_class_id
+* <frame>, <id>, <bb_left>, <bb_top>, <bb_width>, <bb_height>, <conf>, <x>, <y>, <z>
+'frame' is the frame number and 'id' is the id of the tracked object. 'bb_left', 'bb_top', 'bb_width', 'bb_height' are the top-left corner coordinates, width and height of the bounding box, respectively. 'conf' is the detection confidence. 'x', 'y', 'z' are the 3D world coordinates of the detection.
+
+For the object detection project, we only need the first 6 columns. The rest are for 3D tracking. The conf value can be used to ignore a line if it's 0.
+bounding box coordinates are in pixels, while for yolo model we need them normalized to [0,1]. Yolo format requires:
+* <object-class> <x> <y> <width> <height>
+where x,y are the center of the bounding box, and width, height are the width and height of the bounding box, all normalized to [0,1].
 
 
 # Project composition:
@@ -31,7 +41,8 @@ YoloV8[https://github.com/ultralytics/ultralytics] is the state-of-the-art objec
 
 
 # Work status:
-[] Analyze annotation format
+[x] Analyze annotation format
 [...] dataset transformation to yolo format
-[] draw annotations on video
+[] draw transformed annotations on video to check results
+
 [] model training
