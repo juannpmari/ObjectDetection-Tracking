@@ -10,7 +10,7 @@ Python, Pytorch, YOLOv8, Faster-RCNN
 https://motchallenge.net/instructions/
 Each video directory contains two subdirectories, one with the frames and the other with a file gt.txt with annotations.
 This file containes many lines, each with the following information:
-* <frame>, <id>, <bb_left>, <bb_top>, <bb_width>, <bb_height>, <conf>, <x>, <y>, <z>
+* 'frame' 'id', 'bb_left', <'bb_top'>, <'bb_width'>, <'bb_height'>, <'conf'>, <'x'>, <'y'>, <'z'>
 'frame' is the frame number and 'id' is the id of the tracked object. 'bb_left', 'bb_top', 'bb_width', 'bb_height' are the top-left corner coordinates, width and height of the bounding box, respectively. 'conf' is the detection confidence. 'x', 'y', 'z' are the 3D world coordinates of the detection.
 
 For the object detection project, we only need the first 6 columns. The rest are for 3D tracking. The conf value can be used to ignore a line if it's 0.
