@@ -2,7 +2,7 @@ from utils import TrainingUtils
 from utils import DetectionUtils 
 
 # print("transforming data to yolo format...")
-# TrainingUtils().transform2yolo()
+# TrainingUtils().transform2yolo(move_imgs=True)
 DetectionUtils.annotation_visualizer('data')
 
 # if __name__=='__main__':
