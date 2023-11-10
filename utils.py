@@ -64,4 +64,36 @@ class DetectionUtils:
             cv2.imshow('img', img)
             cv2.waitKey(100) # wait for 100 milliseconds
     
+    def annotation_visualizer(data_path):
+        '''Visualize the video frames in the video_path'''
+        video_path = Path(data_path,'yolo/train/images')
         
+        images = []
+
+        for item in os.listdir(video_path):
+            img = cv2.imread(f'data/yolo/train/images/{item}')
+            
+            ann_file = open(f'data/yolo/train/labels/{item.split(".")[0]}.txt', 'r')
+            lines = ann_file.readlines()
+            lines = [line.split(' ') for line in lines]
+            for line in lines:
+                # print(len(line))
+                bbox_x = int((line[1]))
+                bbox_y = int((line[2]))
+                bbox_w = int((line[3]))
+                bbox_h = int((line[4]))
+
+                img = cv2.rectangle(img,(bbox_x,bbox_y),(bbox_x+bbox_w,bbox_y+bbox_h),color=(255,0,0))
+            images.append(img)
+
+            cv2.imshow('img', img)
+            cv2.waitKey(20)
+
+        # height, width, layers = images[0].shape
+        # video = cv2.VideoWriter('video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width,height))
+
+        # for image in images:
+        #     video.write(image)
+        
+        # cv2.destroyAllWindows()
+        # video.release()
