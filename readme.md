@@ -31,6 +31,8 @@ where x,y are the center of the bounding box, and width, height are the width an
     * virtualenv/bin/activate
     * Install the requirements: pip install -r requirements.txt
     * Download the dataset and extract it to the data folder
+Hardware requirements: model training and inference was carried out with an Nvidia RTX3080 and CUDA 11. If ypu don't have GPU, there are videos showing model inference results.
+
 
 # Object detection
 YoloV8[https://github.com/ultralytics/ultralytics] is the state-of-the-art object detection model. So we'll train it on the MOT16 dataset. The model is trained on the training set and evaluated on the test set.

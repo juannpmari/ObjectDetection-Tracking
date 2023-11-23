@@ -66,10 +66,45 @@ class DetectionUtils:
             cv2.imshow('img', img)
             cv2.waitKey(100) # wait for 100 milliseconds
     
-    def annotation_visualizer(data_path):
-            '''Visualize the video frames in the video_path'''
+    def annotation_visualizer(data_path, save_video=True):
+        '''Visualize the video frames in the video_path with annotations'''
+        video_path = Path(data_path, 'yolo/train/images')
+
+        fps = 30
+        first_img = cv2.imread(f'data/yolo/train/images/{os.listdir(video_path)[0]}')  # Get size from first image
+        size_x, size_y, _ = first_img.shape
+
+        video_writer = cv2.VideoWriter('./annotations.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (size_y, size_x))
+        images = []
+
+        for item in os.listdir(video_path):
+            img = cv2.imread(f'data/yolo/train/images/{item}')
+
+            ann_file = open(f'data/yolo/train/labels/{item.split(".")[0]}.txt', 'r')
+            lines = ann_file.readlines()
+            lines = [line.split(' ') for line in lines]
+            for line in lines:
+                bbox_x = int(line[1])
+                bbox_y = int(line[2])
+                bbox_w = int(line[3])
+                bbox_h = int(line[4])
+
+                img = cv2.rectangle(img, (bbox_x, bbox_y), (bbox_x + bbox_w, bbox_y + bbox_h), color=(255, 0, 0))
+                img = cv2.putText(img, line[0], (bbox_x, bbox_y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+
+            images.append(img)
+
+            video_writer.write(img)
+            cv2.imshow('img', img)
+            cv2.waitKey(20)
+            '''Visualize the video frames in the video_path with annotations'''
             video_path = Path(data_path,'yolo/train/images')
             
+            fps = 30
+            first_img = cv2.imread(f'data/yolo/train/images/{os.listdir(video_path)[0]}') #Get size from first image
+            size_x,size_y,_ = first_img.shape
+
+            video_writer = cv2.VideoWriter('./annotations.mp4',cv2.VideoWriter_fourcc(*'mp4v'), fps, (size_x,size_y))
             images = []
 
             for item in os.listdir(video_path):
@@ -89,16 +124,16 @@ class DetectionUtils:
                     
                 images.append(img)
 
+                video_writer.write(img)
                 cv2.imshow('img', img)
                 cv2.waitKey(20)
+                #TODO: logging.info with frame number 
 
-                print("stop")
 
             # height, width, layers = images[0].shape
             # video = cv2.VideoWriter('video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width,height))
 
             # for image in images:
             #     video.write(image)
-            
-            # cv2.destroyAllWindows()
-            # video.release()
+        video_writer.release()
+        cv2.destroyAllWindows()
