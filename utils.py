@@ -22,16 +22,15 @@ class TrainingUtils:
                 h,w = cv2.imread(str(Path(img_path,img_list[img_idx-1]))).shape[:2]
                 output_ann_file_path = filename + ".txt"
                 with open(output_ann_file_path, 'a') as output_file:
-                    if True:#int(matches[0]) == img_idx and int(matches[8]) == 1:
 
-                        #Normalize values to [0,1], and then move x,y to the center of the box
-                        bbox_x_tl = float(matches[2])/w #bbox x top left
-                        bbox_y_tl = float(matches[3])/h #bbox y top left
-                        bbox_w = float(matches[4])/w #bbox width
-                        bbox_h = float(matches[5])/h
+                    #Normalize values to [0,1], and then move x,y to the center of the box
+                    bbox_x_tl = float(matches[2])/w #bbox x top left
+                    bbox_y_tl = float(matches[3])/h #bbox y top left
+                    bbox_w = float(matches[4])/w #bbox width
+                    bbox_h = float(matches[5])/h
 
-                        new_line = f'{matches[6]} {bbox_x_tl+bbox_w/2} {bbox_y_tl+bbox_h/2} {float(matches[4])/w} {float(matches[5])/h}\n'
-                        output_file.write(new_line)
+                    new_line = f'{matches[6]} {bbox_x_tl+bbox_w/2} {bbox_y_tl+bbox_h/2} {float(matches[4])/w} {float(matches[5])/h}\n'
+                    output_file.write(new_line)
 
 
     def transform2yolo(self,data_path:str = './data',subsets:list = ['test','train'],move_imgs = False):
@@ -62,7 +61,9 @@ class TrainingUtils:
                     ann_path=Path(data_path,subset,folder,'gt')
                     self._transform_annotations(ann_path,img_path=img_path,output_ann_path=output_ann_path)
                 
-        
+    def train_test_split(self,data_path:str = './data',train_test_ratio:float = 0.8):
+        '''Split data into train and test sets'''
+        pass   
 
 class DetectionUtils:
 
@@ -80,10 +81,9 @@ class DetectionUtils:
 
         fps = 30
         first_img = cv2.imread(f'data/yolo/train/images/{os.listdir(video_path)[0]}')  # Get size from first image
-        size_x, size_y, _ = first_img.shape
+        size_y, size_x, _ = first_img.shape
 
         video_writer = cv2.VideoWriter('./annotations.mp4', cv2.VideoWriter_fourcc(*'mp4v'), fps, (size_y, size_x))
-        images = []
 
         for item in os.listdir(video_path):
             img = cv2.imread(f'data/yolo/train/images/{item}')
@@ -98,52 +98,13 @@ class DetectionUtils:
                 bbox_w = int(float(line[3])*size_x)
                 bbox_h = int(float(line[4])*size_y)
                 
-                #TODO: quedó un error porque se grafican mal las cajas, hay que corregirlo
                 img = cv2.rectangle(img, (bbox_x_c-int(bbox_w/2), bbox_y_c-int(bbox_h/2)), (bbox_x_c + int(bbox_w/2), bbox_y_c + int(bbox_h/2)), color=(255, 0, 0))
                 img = cv2.putText(img, line[0], (bbox_x_c, bbox_y_c - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-
-            images.append(img)
+            cv2.imwrite(f'data/annot_images/{item}', img)
 
             video_writer.write(img)
             cv2.imshow('img', img)
             cv2.waitKey(20)
-            # '''Visualize the video frames in the video_path with annotations'''
-            # video_path = Path(data_path,'yolo/train/images')
             
-            # fps = 30
-            # first_img = cv2.imread(f'data/yolo/train/images/{os.listdir(video_path)[0]}') #Get size from first image
-            # size_x,size_y,_ = first_img.shape
-
-            # video_writer = cv2.VideoWriter('./annotations.mp4',cv2.VideoWriter_fourcc(*'mp4v'), fps, (size_x,size_y))
-            # images = []
-
-            # for item in os.listdir(video_path):
-            #     img = cv2.imread(f'data/yolo/train/images/{item}')
-                
-            #     ann_file = open(f'data/yolo/train/labels/{item.split(".")[0]}.txt', 'r')
-            #     lines = ann_file.readlines()
-            #     lines = [line.split(' ') for line in lines]
-            #     for line in lines:
-            #         bbox_x = int((line[1]))
-            #         bbox_y = int((line[2]))
-            #         bbox_w = int((line[3]))
-            #         bbox_h = int((line[4]))
-
-            #         img = cv2.rectangle(img,(bbox_x,bbox_y),(bbox_x+bbox_w,bbox_y+bbox_h),color=(255,0,0))
-            #         img = cv2.putText(img, line[0], (bbox_x, bbox_y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0), 2)
-                    
-            #     images.append(img)
-
-            #     video_writer.write(img)
-            #     cv2.imshow('img', img)
-            #     cv2.waitKey(20)
-                #TODO: logging.info with frame number 
-
-
-            # height, width, layers = images[0].shape
-            # video = cv2.VideoWriter('video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 30, (width,height))
-
-            # for image in images:
-            #     video.write(image)
         video_writer.release()
         cv2.destroyAllWindows()

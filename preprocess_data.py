@@ -5,4 +5,6 @@ from utils import DetectionUtils
 
 # print("transforming data to yolo format...")
 # TrainingUtils().transform2yolo(move_imgs=True)
+# TrainingUtils().train_test_split()
+
 DetectionUtils.annotation_visualizer('data')
