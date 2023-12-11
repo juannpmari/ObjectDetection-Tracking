@@ -1,5 +1,7 @@
+from datetime import datetime
 import os
 from pathlib import Path
+import random
 import re
 import shutil
 import cv2
@@ -61,9 +63,38 @@ class TrainingUtils:
                     ann_path=Path(data_path,subset,folder,'gt')
                     self._transform_annotations(ann_path,img_path=img_path,output_ann_path=output_ann_path)
                 
-    def train_test_split(self,data_path:str = './data',train_test_ratio:float = 0.8):
-        '''Split data into train and test sets'''
-        pass   
+    
+    def train_test_split(self,data_path:str = './data/yolo/train',train_perc:float = 0.8,valid_perc:float=0.1):
+        '''Split data into train, validation and test sets'''
+        
+        output_dataset = f'dataset_{datetime.now().strftime("%Y%m%d")}'
+        
+
+        full_img_list = os.listdir(Path(data_path,'images'))
+        full_label_list = os.listdir(Path(data_path,'labels'))
+
+        data = list(zip(full_img_list, full_label_list))
+        random.shuffle(data)
+
+
+        train_size = int(train_perc*len(full_img_list))
+        valid_size = int(valid_perc*len(full_img_list))
+
+        train_data = data[:train_size]
+        val_data = data[train_size:train_size+valid_size]
+        test_data = data[train_size+valid_size:]
+        
+
+        data_types = ['images','labels']
+        for i in range(0,len(data_types)):
+            os.makedirs(Path(output_dataset,'train',data_types[i]),exist_ok=True)
+            os.makedirs(Path(output_dataset,'valid',data_types[i]),exist_ok=True)
+            os.makedirs(Path(output_dataset,'test',data_types[i]),exist_ok=True)
+            list(map(lambda x:shutil.copy(Path(data_path,data_types[i],x[i]),Path(output_dataset,'train',data_types[i])),train_data))
+            list(map(lambda x:shutil.copy(Path(data_path,data_types[i],x[i]),Path(output_dataset,'valid',data_types[i])),val_data))
+            list(map(lambda x:shutil.copy(Path(data_path,data_types[i],x[i]),Path(output_dataset,'test',data_types[i])),test_data))     
+
+           
 
 class DetectionUtils:
 
