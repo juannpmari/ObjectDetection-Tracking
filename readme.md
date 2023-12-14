@@ -3,8 +3,21 @@ Dataset: https://motchallenge.net/data/MOT16/
 # Description:
 This benchmark contains 14 challenging video sequences (7 training, 7 test) in unconstrained environments filmed with both static and moving cameras. Tracking and evaluation are done in image coordinates. All sequences have been annotated with high accuracy, strictly following a well-defined protocol.
 
-## Technologies used:
-Python, Pytorch, YOLOv8, Faster-RCNN
+## Concepts and technologies involved:
+### Containerization
+* Docker
+* Orchestration: Docker-compose
+
+### ML and computer vision
+* Framework: Pytorch
+* Models: YOLOv8, Faster-RCNN
+* CUDA for GPU acceleration
+* Evaluation metrics: mAP, recall, precission, F1-score
+
+### Advanced Python concepts used:
+* Concurrent programming: multithreading and multiprocessing
+* Decorators: @staticmethod, @classmethod, @property
+* Iterators and generators
 
 ## Annotation format:
 https://motchallenge.net/instructions/
