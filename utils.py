@@ -1,41 +1,79 @@
 from datetime import datetime
+import itertools
 import os
 from pathlib import Path
 import random
 import re
 import shutil
+import time
 import cv2
 from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 class TrainingUtils:
     
+    @staticmethod
+    def _transform_one_annotation(line,idx,pattern,img_path,img_list,output_ann_path):
+        print(f"Opening with line {idx}")
+        matches = re.findall(pattern, line)
+        img_idx = int(matches[0]) #First value refers to frame number
+        filename, extension = os.path.splitext(Path(output_ann_path,img_list[img_idx-1]))
+        h,w = cv2.imread(str(Path(img_path,img_list[img_idx-1]))).shape[:2]
+        output_ann_file_path = filename + ".txt"
+        with open(output_ann_file_path, 'a') as output_file:
 
-    def _transform_annotations(self,ann_path,img_path,output_ann_path):
+            #Normalize values to [0,1], and then move x,y to the center of the box
+            bbox_x_tl = float(matches[2])/w #bbox x top left
+            bbox_y_tl = float(matches[3])/h #bbox y top left
+            bbox_w = float(matches[4])/w #bbox width
+            bbox_h = float(matches[5])/h
+
+            new_line = f'0 {bbox_x_tl+bbox_w/2} {bbox_y_tl+bbox_h/2} {float(matches[4])/w} {float(matches[5])/h}\n'
+            output_file.write(new_line)
+
+    @classmethod
+    def _transform_annotations(cls,ann_path,img_path,output_ann_path):
         '''Transforms data annotatios (all in the same .txt) to yolo format (one .txt for each image)'''
         #TODO: optimize this code, it's very slow
         pattern = r'\d+'  # Matches one or more digits
         img_list = os.listdir(img_path)
+        
+        start = time.perf_counter()
 
         with open(Path(ann_path,'gt.txt')) as ann_file:
-            for line in tqdm(ann_file, desc="Transforming annotations"):
-                matches = re.findall(pattern, line)
-                img_idx = int(matches[0]) #First value refers to frame number
-                filename, extension = os.path.splitext(Path(output_ann_path,img_list[img_idx-1]))
-                h,w = cv2.imread(str(Path(img_path,img_list[img_idx-1]))).shape[:2]
-                output_ann_file_path = filename + ".txt"
-                with open(output_ann_file_path, 'a') as output_file:
+            lines = [line for line in ann_file]
+            idxs = [idx for idx,_ in enumerate(lines)]
+            with ThreadPoolExecutor() as executor:
+                executor.map(cls._transform_one_annotation,lines,idxs,
+                             itertools.repeat(pattern,len(lines)),
+                             itertools.repeat(img_path,len(lines)),
+                             itertools.repeat(img_list,len(lines)),
+                             itertools.repeat(output_ann_path,len(lines)))
+                
+            ## Sequential alternative (more than 2x slower)
+            # for line in tqdm(ann_file, desc="Transforming annotations"):
+            #     matches = re.findall(pattern, line)
+            #     img_idx = int(matches[0]) #First value refers to frame number
+            #     filename, extension = os.path.splitext(Path(output_ann_path,img_list[img_idx-1]))
+            #     h,w = cv2.imread(str(Path(img_path,img_list[img_idx-1]))).shape[:2]
+            #     output_ann_file_path = filename + ".txt"
+            #     with open(output_ann_file_path, 'a') as output_file:
 
-                    #Normalize values to [0,1], and then move x,y to the center of the box
-                    bbox_x_tl = float(matches[2])/w #bbox x top left
-                    bbox_y_tl = float(matches[3])/h #bbox y top left
-                    bbox_w = float(matches[4])/w #bbox width
-                    bbox_h = float(matches[5])/h
+            #         #Normalize values to [0,1], and then move x,y to the center of the box
+            #         bbox_x_tl = float(matches[2])/w #bbox x top left
+            #         bbox_y_tl = float(matches[3])/h #bbox y top left
+            #         bbox_w = float(matches[4])/w #bbox width
+            #         bbox_h = float(matches[5])/h
 
-                    new_line = f'{matches[6]} {bbox_x_tl+bbox_w/2} {bbox_y_tl+bbox_h/2} {float(matches[4])/w} {float(matches[5])/h}\n'
-                    output_file.write(new_line)
+            #         new_line = f'{matches[6]} {bbox_x_tl+bbox_w/2} {bbox_y_tl+bbox_h/2} {float(matches[4])/w} {float(matches[5])/h}\n'
+            #         output_file.write(new_line)
+        print("Done converting to yolo")
+        finish = time.perf_counter()
+        print(f'time {round(finish-start,2)}')
 
 
-    def transform2yolo(self,data_path:str = './data',subsets:list = ['test','train'],move_imgs = False):
+    @classmethod
+    def transform2yolo(cls,data_path:str = './data',subsets:list = ['test','train'],move_imgs = False):
         '''Transforms annotations to yolo format'''
 
         dst_path = Path(data_path,'yolo')
@@ -46,7 +84,7 @@ class TrainingUtils:
             # os.makedirs(subset_path,exist_ok=True)
             os.makedirs(Path(dst_subset_path,'images'),exist_ok=True)
 
-            output_ann_path = Path(dst_subset_path,'labels')
+            output_ann_path = Path(dst_subset_path,'probando')#'labels')
             os.makedirs(output_ann_path,exist_ok=True)
 
             #TODO: use rglob instead. This can also be done using multiprocessing (map())
@@ -55,16 +93,22 @@ class TrainingUtils:
 
                 #Move images
                 if move_imgs:
-                    for file in os.listdir(img_path):
-                        shutil.copy(Path(img_path,file),Path(dst_subset_path,'images'))
+                    with ThreadPoolExecutor() as executor:
+                        source_list = [Path(img_path,file) for file in os.listdir(img_path)]
+                        dest_list = [Path(dst_subset_path,'images') for i in range(len(source_list))]
+                        executor.map(shutil.copy,source_list,dest_list)
+                    
+                    #Sequential alternative
+                    # for file in os.listdir(img_path):
+                    #     shutil.copy(Path(img_path,file),Path(dst_subset_path,'images'))
 
                 #Transform annotations
                 if subset in ['train','valid']:
                     ann_path=Path(data_path,subset,folder,'gt')
-                    self._transform_annotations(ann_path,img_path=img_path,output_ann_path=output_ann_path)
+                    cls._transform_annotations(ann_path,img_path=img_path,output_ann_path=output_ann_path)
                 
-    
-    def train_test_split(self,data_path:str = './data/yolo/train',train_perc:float = 0.8,valid_perc:float=0.1):
+    @staticmethod
+    def train_test_split(data_path:str = './data/yolo/train',train_perc:float = 0.8,valid_perc:float=0.1):
         '''Split data into train, validation and test sets'''
         
         output_dataset = f'dataset_{datetime.now().strftime("%Y%m%d")}'
