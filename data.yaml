@@ -1,0 +1,1 @@
+train: dataset_20231214\trainval: dataset_20231214\validtest: dataset_20231214\testnc: 1classes: ['person']

@@ -120,7 +120,6 @@ class TrainingUtils:
         data = list(zip(full_img_list, full_label_list))
         random.shuffle(data)
 
-
         train_size = int(train_perc*len(full_img_list))
         valid_size = int(valid_perc*len(full_img_list))
 
@@ -137,6 +136,14 @@ class TrainingUtils:
             list(map(lambda x:shutil.copy(Path(data_path,data_types[i],x[i]),Path(output_dataset,'train',data_types[i])),train_data))
             list(map(lambda x:shutil.copy(Path(data_path,data_types[i],x[i]),Path(output_dataset,'valid',data_types[i])),val_data))
             list(map(lambda x:shutil.copy(Path(data_path,data_types[i],x[i]),Path(output_dataset,'test',data_types[i])),test_data))     
+
+        #Create data.yaml file
+        with open('data.yaml','w+') as file:
+            file.write(f"train: {Path(output_dataset,'train')}")
+            file.write(f"val: {Path(output_dataset,'valid')}")
+            file.write(f"test: {Path(output_dataset,'test')}")
+            file.write('nc: 1')
+            file.write("classes: ['person']")
 
            
 
