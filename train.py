@@ -20,7 +20,8 @@ cfg = args["cfg"]
 data = args['data']
 
 if __name__ == "__main__":
-    model = YOLO(path_pretrained_model)
-    model.train(cfg=cfg,data=data)
+    model = YOLO('/models/yolov8n.pt')
+    results = model.train(cfg='/app/default_copy.yaml',data='/dataset/data.yaml',project='/models',name='yolov8_def_args', epochs=200, imgsz=640)
+    model.export()
 
 #Example usage: python train.py -m yolov8n.pt -d person_pp_231122/data.yaml -c default_copy.yaml
