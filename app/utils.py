@@ -8,6 +8,7 @@ import shutil
 import time
 import cv2
 from tqdm import tqdm
+import yaml
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 class TrainingUtils:
@@ -137,13 +138,18 @@ class TrainingUtils:
             list(map(lambda x:shutil.copy(Path(data_path,data_types[i],x[i]),Path(output_dataset,'valid',data_types[i])),val_data))
             list(map(lambda x:shutil.copy(Path(data_path,data_types[i],x[i]),Path(output_dataset,'test',data_types[i])),test_data))     
 
-        #Create data.yaml file
-        with open('data.yaml','w+') as file:
-            file.write(f"train: {Path(output_dataset,'train')}")
-            file.write(f"val: {Path(output_dataset,'valid')}")
-            file.write(f"test: {Path(output_dataset,'test')}")
-            file.write('nc: 1')
-            file.write("classes: ['person']")
+       # Create data.yaml file
+        with open('data.yaml', 'w+') as file:
+            yaml.dump(
+                {
+                    "train": str(Path(output_dataset, 'train')),
+                    "val": str(Path(output_dataset, 'valid')),
+                    "test": str(Path(output_dataset, 'test')),
+                    "nc": 1,
+                    "classes": ['person']
+                },
+                file
+            )
 
            
 
