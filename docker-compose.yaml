@@ -1,8 +1,7 @@
-version: '3'
+version: '1'
 services:
   ultralytics:
-    image: ultralytics/ultralytics:latest
-    # runtime: nvidia  # Use this line if you are using NVIDIA GPUs
+    image: yolov8
     volumes:
         - ./dataset_20231211:/dataset
         - ./models:/models

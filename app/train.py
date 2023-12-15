@@ -26,4 +26,4 @@ if __name__ == "__main__":
     results = model.train(cfg='/app/default_copy.yaml',data='/dataset/data.yaml',project=project,name=name)#, epochs=200, imgsz=640)
     model.export()
 
-#Example usage: python train.py -m yolov8n.pt -d person_pp_231122/data.yaml -c default_copy.yaml -p first_project -n first_run
+#Example usage: # example usage: python app/train.py -m models/yolov8n.pt -d dataset/data.yaml -c default_copy.yaml -p yolov8 -n run2
