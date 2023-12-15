@@ -1,0 +1,18 @@
+version: '3'
+services:
+  ultralytics:
+    image: ultralytics/ultralytics:latest
+    # runtime: nvidia  # Use this line if you are using NVIDIA GPUs
+    volumes:
+        - ./dataset_20231211:/dataset
+        - ./models:/models
+        - ./app:/app
+    command: tail -f /dev/null
+    ipc: host
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]

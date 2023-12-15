@@ -1,4 +1,3 @@
-#TODO: use argsparser to launch a model trainining, with passes hyperparameters (one hyp shoul be model, yolo8 or faster-rcnn)
 from ultralytics import YOLO
 import argparse
 
@@ -10,17 +9,21 @@ ap.add_argument("-d", "--data", type=str, required=True,
                 help="path to dataset's data.yaml ")
 ap.add_argument("-c", "--cfg", type=str, required=True,
                 help="path to cfg.yaml file with training config")
-# ap.add_argument("--save", action='store_true',
-#                 help="Save video")
+ap.add_argument("-p", "--project", type=str, required=True,
+                help="result will be saved to ./project/name")
+ap.add_argument("-n", "--name", type=str, required=True,
+                help="result will be saved to ./project/name")
 
 args = vars(ap.parse_args())
-# source = args["source"]
 path_pretrained_model = args["model"]
 cfg = args["cfg"]
 data = args['data']
+project = args['project']
+name = args['name']
 
 if __name__ == "__main__":
-    model = YOLO(path_pretrained_model)
-    model.train(cfg=cfg,data=data)
+    model = YOLO('/models/yolov8n.pt')
+    results = model.train(cfg='/app/default_copy.yaml',data='/dataset/data.yaml',project=project,name=name)#, epochs=200, imgsz=640)
+    model.export()
 
-#Example usage: python train.py -m yolov8n.pt -d person_pp_231122/data.yaml -c default_copy.yaml
+#Example usage: python train.py -m yolov8n.pt -d person_pp_231122/data.yaml -c default_copy.yaml -p first_project -n first_run
